@@ -1,28 +1,32 @@
 import { Link, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import axios from "axios";
+import { useState, useEffect } from "react";
 import "./index.scss";
 
-const Detail = () => {
+const Detail = ({ value }) => {
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
+  const [_id, setId] = useState(value?.data?._id);
+  const [name, setName] = useState(value?.data?.name);
+  const [price, setPrice] = useState(value?.data?.price);
+  const [stock, setStock] = useState(value?.data?.stock);
 
   useEffect(() => {
-    fetchProduct();
+    getProductDetail();
   }, []);
 
-  const fetchProduct = async () => {
+  const getProductDetail = async () => {
     try {
-      const response = await axios.get(`/api/v4/product/${id}`);
-      setProduct(response.data);
+      const response = await axios.get(`http://localhost:3001/api/v4/product/${id}`);
+      if (response.data.data) {
+        setId(response.data.data._id);
+        setName(response.data.data.name);
+        setPrice(response.data.data.price);
+        setStock(response.data.data.stock);
+      }
     } catch (error) {
-      console.error(error);
+      console.log(error.message);
     }
   };
-
-  if (!product) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="main">
@@ -34,19 +38,19 @@ const Detail = () => {
         <tbody>
           <tr>
             <td>ID</td>
-            <td>: {product._id}</td>
+            <td>: {_id}</td>
           </tr>
           <tr>
             <td>Name</td>
-            <td>: {product.name}</td>
+            <td>: {name}</td>
           </tr>
           <tr>
             <td>Price</td>
-            <td>: Rp. {product.price}</td>
+            <td>: Rp. {price}</td>
           </tr>
           <tr>
             <td>Stock</td>
-            <td>: {product.stock}</td>
+            <td>: {stock}</td>
           </tr>
         </tbody>
       </table>

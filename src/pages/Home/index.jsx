@@ -1,31 +1,33 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import "./index.scss";
+import axios from "axios";
 
 const Home = () => {
-  const [products, setProducts] = useState([]);
+  const [productList, setProductList] = useState([]);
+  const [searchProduct, setSearchProduct] = useState("");
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/api/v4/product");
-        setProducts(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchProducts();
+    getProduct();
   }, []);
+
+  const getProduct = async () => {
+    try {
+      const response = await axios.get("http://localhost:3001/api/v4/products");
+      setProductList(response.data.data);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const filterProductList = productList ? productList.filter((product) => product.name.toLowerCase().includes(searchProduct.toLowerCase())) : [];
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3001/api/v4/product/${id}`);
-      console.log("Product deleted successfully");
-      fetchProducts();
+      getProduct();
     } catch (error) {
-      console.error(error);
+      console.log(error.message);
     }
   };
 
@@ -35,7 +37,7 @@ const Home = () => {
         Tambah Produk
       </Link>
       <div className="search">
-        <input type="text" placeholder="Masukkan kata kunci..." />
+        <input type="text" placeholder="Masukan kata kunci..." value={searchProduct} onChange={(e) => setSearchProduct(e.target.value)} />
       </div>
       <table className="table">
         <thead>
@@ -47,19 +49,20 @@ const Home = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
-            <tr key={product._id}>
-              <td>{product._id}</td>
-              <td>{product.name}</td>
-              <td className="text-right">{product.price}</td>
+          {filterProductList.map((value) => (
+            <tr>
+              <td>{value._id}</td>
+              <td>{value.name}</td>
+              <td className="text-right">RP. {value.price}</td>
               <td className="text-center">
-                <Link to={`/detail/${product._id}`} className="btn btn-sm btn-info">
+                <Link to={`/detail/${value._id}`} className="btn btn-sm btn-info">
                   Detail
                 </Link>
-                <Link to={`/edit/${product._id}`} className="btn btn-sm btn-warning">
+                {console.log("valueID: ", value._id)}
+                <Link to={`/edit/${value._id}`} className="btn btn-sm btn-warning">
                   Edit
                 </Link>
-                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(product._id)}>
+                <button className="btn btn-sm btn-danger" onClick={() => handleDelete(value._id)}>
                   Delete
                 </button>
               </td>
